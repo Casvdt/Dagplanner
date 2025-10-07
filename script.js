@@ -13,6 +13,26 @@ let selectedDate = null;
 // Taken opslaan in localStorage
 let tasksData = JSON.parse(localStorage.getItem('tasksData')) || {};
 
+// Thema beheer
+function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    document.body.classList.toggle('dark', isDark);
+    updateThemeToggleLabel();
+}
+
+function getInitialTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+}
+
+function updateThemeToggleLabel() {
+    const isDark = document.body.classList.contains('dark');
+    themeToggle.textContent = isDark ? '☀️ Licht thema' : '🌙 Donker thema';
+}
+
 // Kalender genereren
 function generateCalendar() {
     const date = new Date();
@@ -129,13 +149,14 @@ function saveTasks() {
 
 // Dag kleur op basis van taken
 function updateDayColor(dayEl, key) {
-    if (!tasksData[key] || tasksData[key].length === 0) {
-        dayEl.style.backgroundColor = '';
-    } else if (tasksData[key].length <= 2) {
-        dayEl.style.backgroundColor = '#a5b4fc';
+    if (!dayEl) return;
+    dayEl.classList.remove('load-few', 'load-many');
+    const count = (tasksData[key] || []).length;
+    if (count === 0) return; // geen extra klasse
+    if (count <= 2) {
+        dayEl.classList.add('load-few');
     } else {
-        dayEl.style.backgroundColor = '#6366f1';
-        dayEl.style.color = '#fff';
+        dayEl.classList.add('load-many');
     }
 }
 
@@ -154,8 +175,13 @@ function updateProgress() {
 
 // Theme toggle
 themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.toggle('dark');
+    const theme = isDark ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+    updateThemeToggleLabel();
 });
 
 // Init
+applyTheme(getInitialTheme());
 generateCalendar();
+updateThemeToggleLabel();

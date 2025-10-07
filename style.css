@@ -1,35 +1,73 @@
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f0f4f8;
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-    transition: background 0.3s, color 0.3s;
+/* Thema-variabelen */
+:root {
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --card: #f1f5ff;
+    --text: #0b1220;
+    --text-muted: #51607a;
+    --border: #d9e1ec;
+    --primary: #5b6ef5;
+    --primary-100: #aab4ff;
+    --on-primary: #ffffff;
+    --success: #22c55e;
+    --success-bg: #e8f7ee;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --muted: #e5eaf2;
+    --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
 }
 
 body.dark {
-    background-color: #1e1e2f;
-    color: #fff;
+    --bg: #0f1421;
+    --surface: #171c2b;
+    --card: #1e2436;
+    --text: #e6ecf8;
+    --text-muted: #a7b1c7;
+    --border: #2c3449;
+    --primary: #7c8cff;
+    --primary-100: #5566e6;
+    --on-primary: #0b1020;
+    --success: #22c55e;
+    --success-bg: #172a1e;
+    --danger: #f87171;
+    --info: #60a5fa;
+    --muted: #1f2537;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container {
-    background: white;
+    background: var(--surface);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
     width: 500px;
-    transition: background 0.3s;
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-body.dark .container {
-    background: #2c2c3e;
-}
+body.dark .container { background: var(--surface); }
 
 #theme-toggle {
     margin-bottom: 10px;
-    padding: 5px 10px;
+    padding: 8px 12px;
     cursor: pointer;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
 }
+#theme-toggle:hover { background: var(--muted); }
+#theme-toggle:active { transform: translateY(1px); }
 
 .calendar {
     display: grid;
@@ -40,21 +78,25 @@ body.dark .container {
 
 .day {
     padding: 10px;
-    background-color: #e0e7ff;
+    background-color: var(--card);
     text-align: center;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    border: 1px solid var(--border);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
 }
 
-body.dark .day {
-    background-color: #444466;
-}
+.day:hover { background-color: var(--muted); }
 
 .day.selected {
-    background-color: #6366f1;
-    color: white;
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border-color: transparent;
 }
+
+/* Dag-ladingstatus op basis van aantal taken */
+.day.load-few { background-color: var(--primary-100); color: var(--on-primary); border-color: transparent; }
+.day.load-many { background-color: var(--primary); color: var(--on-primary); border-color: transparent; }
 
 form {
     display: flex;
@@ -65,15 +107,19 @@ form {
 input, select, button {
     padding: 8px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
 }
 
 button {
     border: none;
-    background-color: #4caf50;
-    color: white;
+    background-color: var(--primary);
+    color: var(--on-primary);
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.05s ease;
 }
+button:hover { filter: brightness(0.95); }
+button:active { transform: translateY(1px); }
+input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
 
 ul {
     list-style: none;
@@ -84,10 +130,11 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #e8f5e9;
+    background-color: var(--card);
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
+    border: 1px solid var(--border);
     transition: transform 0.3s, background 0.3s;
     opacity: 0;
     animation: fadeIn 0.5s forwards;
@@ -95,16 +142,16 @@ li {
 
 li.completed {
     text-decoration: line-through;
-    background-color: #c8e6c9;
+    background-color: var(--success-bg);
     transform: scale(1.05);
 }
 
 li.high {
-    border-left: 5px solid red;
+    border-left: 5px solid var(--danger);
 }
 
 li.low {
-    border-left: 5px solid blue;
+    border-left: 5px solid var(--info);
 }
 
 button.delete-btn {
@@ -119,7 +166,7 @@ button.delete-btn {
 }
 
 .progress-bar-container {
-    background: #ddd;
+    background: var(--muted);
     height: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
@@ -129,6 +176,6 @@ button.delete-btn {
 .progress-bar {
     height: 100%;
     width: 0%;
-    background-color: #4caf50;
+    background-color: var(--primary);
     transition: width 0.3s;
 }
