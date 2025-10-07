@@ -77,6 +77,12 @@ function showTasks() {
       tasks.splice(index, 1);
       li.remove();
       saveTasks();
+
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: {y: 0.6}
+      });
     });
 
     li.appendChild(deleteBtn);
