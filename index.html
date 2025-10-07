@@ -17,10 +17,19 @@
             <h2 class="selected-day">Selecteer een dag</h2>
             <div class="progress-bar-container">
                 <div class="progress-bar"></div>
+                <div class="progress-text" aria-live="polite">0%</div>
             </div>
             <form class="task-form">
                 <input type="text" class="task-input" placeholder="Nieuwe taak...">
                 <input type="time" class="task-time">
+                <select class="task-reminder" title="Herinnering">
+                    <option value="none">Geen herinnering</option>
+                    <option value="0">Op tijdstip</option>
+                    <option value="5">5 min eerder</option>
+                    <option value="10">10 min eerder</option>
+                    <option value="30">30 min eerder</option>
+                    <option value="60">1 uur eerder</option>
+                </select>
                 <select class="task-priority">
                     <option value="normal">Normaal</option>
                     <option value="high">Hoog 🔥</option>
@@ -28,6 +37,9 @@
                 </select>
                 <button type="submit">Toevoegen</button>
             </form>
+            <div class="list-controls">
+                <label><input type="checkbox" id="hide-completed"> Verberg voltooide taken</label>
+            </div>
             <ul class="task-list"></ul>
         </div>
     </div>
