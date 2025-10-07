@@ -25,6 +25,15 @@ function applyTheme(theme) {
     updateThemeToggleLabel();
 }
 
+function formatDateNL(dateKey) {
+    // dateKey: YYYY-M-D
+    if (!dateKey) return '';
+    const [y, m, d] = dateKey.split('-').map(n => parseInt(n, 10));
+    const dd = String(d).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${dd}-${mm}-${y}`;
+}
+
 // Nieuwe taak toevoegen (submit handler)
 taskForm.addEventListener('submit', e => {
     e.preventDefault();
@@ -58,7 +67,7 @@ taskForm.addEventListener('submit', e => {
     taskInput.value = '';
     taskTime.value = '';
     if (taskReminder) taskReminder.value = 'none';
-    taskPriority.value = 'normal';
+    taskPriority.value = 'belangrijk';
 });
 
 function getInitialTheme() {
@@ -120,7 +129,7 @@ function generateCalendar() {
 function selectDay(dayEl) {
     document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
     dayEl.classList.add('selected');
-    selectedDayTitle.textContent = `Taken voor ${selectedDate}`;
+    selectedDayTitle.textContent = `Taken voor ${formatDateNL(selectedDate)}`;
 }
 
 // Taken tonen
@@ -416,13 +425,15 @@ function requestNotificationPermission() {
         Notification.requestPermission();
     }
 }
-
 function notifyTask(task, dateKey) {
     const title = 'Herinnering';
-    const body = `${task.time ? task.time + ' - ' : ''}${task.text}`;
+    const dateStr = formatDateNL(dateKey);
+    const body = `${dateStr} ${task.time ? task.time + ' - ' : ''}${task.text}`;
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(title, { body });
     } else {
         alert(`${title}: ${body}`);
     }
+    // Reset priority default to 'belangrijk' after submit
+    task.priority = normalizePriority(task.priority);
 }
