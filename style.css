@@ -50,7 +50,8 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: var(--shadow);
-    width: 500px;
+    width: 100%;
+    max-width: 640px;
     transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -98,28 +99,42 @@ body.dark .container { background: var(--surface); }
 .day.load-few { background-color: var(--primary-100); color: var(--on-primary); border-color: transparent; }
 .day.load-many { background-color: var(--primary); color: var(--on-primary); border-color: transparent; }
 
-form {
+.task-form {
     display: flex;
     gap: 5px;
     margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-input, select, button {
+.task-form input, .task-form select, .task-form button {
     padding: 8px;
     border-radius: 5px;
     border: 1px solid var(--border);
 }
 
-button {
+.task-form button {
     border: none;
     background-color: var(--primary);
     color: var(--on-primary);
     cursor: pointer;
     transition: background 0.2s ease, transform 0.05s ease;
 }
-button:hover { filter: brightness(0.95); }
-button:active { transform: translateY(1px); }
-input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+.task-form button:hover { filter: brightness(0.95); }
+.task-form button:active { transform: translateY(1px); }
+.task-form input:focus, .task-form select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* Slimme flex-basis voor form elementen zodat de knop binnen de kaart blijft */
+.task-input { flex: 2 1 180px; min-width: 140px; }
+.task-time { flex: 1 1 120px; min-width: 110px; }
+.task-reminder { flex: 1 1 150px; min-width: 140px; }
+.task-priority { flex: 1 1 130px; min-width: 120px; }
+.task-form button[type="submit"] { flex: 0 0 auto; }
+
+@media (max-width: 520px) {
+  .calendar { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .task-form { gap: 8px; }
+}
 
 ul {
     list-style: none;
