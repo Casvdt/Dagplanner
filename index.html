@@ -1,32 +1,39 @@
 <!DOCTYPE html>
 <html lang="nl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalender Dagplanner</title>
+    <title>Super Dagplanner</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="container">
-        <h1>Mijn Dagplanner</h1>
+        <h1>Mijn Super Dagplanner</h1>
+        <button id="theme-toggle">🌙 Dark Mode</button>
 
         <div class="calendar"></div>
 
         <div class="tasks-container">
             <h2 class="selected-day">Selecteer een dag</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
             <form class="task-form">
                 <input type="text" class="task-input" placeholder="Nieuwe taak...">
+                <input type="time" class="task-time">
+                <select class="task-priority">
+                    <option value="normal">Normaal</option>
+                    <option value="high">Hoog 🔥</option>
+                    <option value="low">Laag 💤</option>
+                </select>
                 <button type="submit">Toevoegen</button>
             </form>
             <ul class="task-list"></ul>
         </div>
     </div>
 
+    <!-- Confetti library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
-
 </body>
-
 </html>

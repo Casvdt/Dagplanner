@@ -4,14 +4,31 @@ body {
     display: flex;
     justify-content: center;
     padding: 50px;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.dark {
+    background-color: #1e1e2f;
+    color: #fff;
 }
 
 .container {
     background: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 500px;
+    transition: background 0.3s;
+}
+
+body.dark .container {
+    background: #2c2c3e;
+}
+
+#theme-toggle {
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
 }
 
 .calendar {
@@ -30,30 +47,31 @@ body {
     transition: background-color 0.2s;
 }
 
-.day-selected {
+body.dark .day {
+    background-color: #444466;
+}
+
+.day.selected {
     background-color: #6366f1;
     color: white;
 }
 
 form {
     display: flex;
-    gap: 10px;
+    gap: 5px;
     margin-bottom: 10px;
 }
 
-input {
-    flex: 1;
+input, select, button {
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
 
 button {
-    padding: 8px 12px;
     border: none;
     background-color: #4caf50;
     color: white;
-    border-radius: 5px;
     cursor: pointer;
 }
 
@@ -65,18 +83,52 @@ ul {
 li {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     background-color: #e8f5e9;
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
-    transition: transform 0.3s;
+    transition: transform 0.3s, background 0.3s;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
 }
 
 li.completed {
     text-decoration: line-through;
     background-color: #c8e6c9;
+    transform: scale(1.05);
 }
 
-.i.completed.animate {
-    transform: scale(1.1);
+li.high {
+    border-left: 5px solid red;
+}
+
+li.low {
+    border-left: 5px solid blue;
+}
+
+button.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+.progress-bar-container {
+    background: #ddd;
+    height: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #4caf50;
+    transition: width 0.3s;
 }
