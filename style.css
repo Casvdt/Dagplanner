@@ -253,4 +253,4 @@ li.drop-target { outline: 2px dashed var(--primary); }
     60% { transform: scale(1.02); }
     100% { transform: scale(1); }
 }
-.bounce-in { animation: subtle-bounce 0.25s ease-out; }
+.bounce-in { animation: fadeIn 0.5s forwards, subtle-bounce 0.25s ease-out; }

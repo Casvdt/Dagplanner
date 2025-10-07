@@ -9,7 +9,6 @@ const selectedDayTitle = document.querySelector('.selected-day');
 const progressBar = document.querySelector('.progress-bar');
 const progressText = document.querySelector('.progress-text');
 const themeToggle = document.getElementById('theme-toggle');
-const hideCompletedCheckbox = document.getElementById('hide-completed');
 
 let selectedDate = null;
 
@@ -125,7 +124,23 @@ function showTasks() {
     if (!selectedDate) return;
     const tasks = tasksData[selectedDate] || [];
 
-    tasks.forEach(task => {
+    // Sorteren: tijd oplopend, dan prioriteit (Hoog > Normaal > Laag)
+    const priorityRank = { high: 0, normal: 1, low: 2 };
+    const toMinutes = (t) => {
+        if (!t) return Number.POSITIVE_INFINITY; // zonder tijd achteraan
+        const [hh, mm] = t.split(':').map(n => parseInt(n, 10));
+        if (Number.isNaN(hh) || Number.isNaN(mm)) return Number.POSITIVE_INFINITY;
+        return hh * 60 + mm;
+    };
+    const sorted = [...tasks].sort((a, b) => {
+        const diff = toMinutes(a.time) - toMinutes(b.time);
+        if (diff !== 0) return diff;
+        const pa = priorityRank[a.priority] ?? 1;
+        const pb = priorityRank[b.priority] ?? 1;
+        return pa - pb; // high(0) eerst
+    });
+
+    sorted.forEach(task => {
         const li = document.createElement('li');
         li.classList.add('bounce-in');
         li.setAttribute('draggable', 'true');
@@ -194,9 +209,7 @@ function showTasks() {
         taskList.appendChild(li);
 
         // Hide completed if toggled
-        if (hideCompletedCheckbox?.checked && task.completed) {
-            li.style.display = 'none';
-        }
+        // Geen verberg voltooide meer
 
         // Drag & drop handlers
         setupDragHandlers(li, task);
@@ -250,10 +263,7 @@ themeToggle.addEventListener('click', () => {
     updateThemeToggleLabel();
 });
 
-// Hide completed toggle
-hideCompletedCheckbox?.addEventListener('change', () => {
-    showTasks();
-});
+// (Feature verwijderd) Verberg voltooide taken
 
 // Init
 applyTheme(getInitialTheme());
