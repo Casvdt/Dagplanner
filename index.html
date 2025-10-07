@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="nl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Kalender Dagplanner</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <div class="container">
+            <h1>Mijn Dagplanner</h1>
+
+            <div class="calendar"></div>
+
+            <div class="tasks-container">
+                <h2 class="selected-day">Selecteer een dag</h2>
+                <form class="task-form">
+                    <input type="text" class="task-input" placeholder="Nieuwe taak...">
+                    <button type="submit">Toevoegen</button>
+                </form>
+                <ul class="task-list"></ul>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
