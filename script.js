@@ -26,6 +26,37 @@ function applyTheme(theme) {
     updateThemeToggleLabel();
 }
 
+// Nieuwe taak toevoegen (submit handler)
+taskForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!selectedDate) return;
+
+    const text = taskInput.value.trim();
+    if (!text) {
+        taskInput.classList.add('shake');
+        taskInput.addEventListener('animationend', () => taskInput.classList.remove('shake'), { once: true });
+        return;
+    }
+
+    const time = taskTime.value;
+    const reminder = taskReminder?.value || 'none';
+    const priority = taskPriority.value;
+
+    if (!tasksData[selectedDate]) tasksData[selectedDate] = [];
+    const newTask = { id: genId(), text, time, priority, reminder, favorite: false, completed: false };
+    tasksData[selectedDate].push(newTask);
+
+    saveTasks();
+    showTasks();
+    updateDayColor(document.querySelector('.day.selected'), selectedDate);
+    scheduleReminderForTask(selectedDate, newTask);
+
+    taskInput.value = '';
+    taskTime.value = '';
+    if (taskReminder) taskReminder.value = 'none';
+    taskPriority.value = 'normal';
+});
+
 function getInitialTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'light' || saved === 'dark') return saved;
@@ -52,7 +83,9 @@ function generateCalendar() {
     for (let i = 0; i < firstDay; i++) {
         calendar.appendChild(document.createElement('div'));
     }
-
+    let todayEl = null;
+    const today = new Date();
+    const isThisMonth = today.getFullYear() === year && today.getMonth() === month;
     for (let day = 1; day <= daysInMonth; day++) {
         const dayEl = document.createElement('div');
         dayEl.classList.add('day');
@@ -68,6 +101,14 @@ function generateCalendar() {
         });
 
         calendar.appendChild(dayEl);
+
+        if (isThisMonth && today.getDate() === day) {
+            todayEl = dayEl;
+        }
+    }
+    // Auto-selecteer vandaag
+    if (todayEl) {
+        todayEl.click();
     }
 }
 
@@ -128,10 +169,12 @@ function showTasks() {
             li.classList.toggle('completed');
             saveTasks();
             updateProgress();
+            if (hideCompletedCheckbox?.checked) {
+                li.style.display = task.completed ? 'none' : '';
+            }
             cancelReminder(task.id);
         });
 
-        // Verwijderknop
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '🗑️';
         deleteBtn.classList.add('delete-btn');
