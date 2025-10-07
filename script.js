@@ -38,8 +38,13 @@ taskForm.addEventListener('submit', e => {
     }
 
     const time = taskTime.value;
+    if (!time) {
+        taskTime.classList.add('shake');
+        taskTime.addEventListener('animationend', () => taskTime.classList.remove('shake'), { once: true });
+        return;
+    }
     const reminder = taskReminder?.value || 'none';
-    const priority = taskPriority.value;
+    const priority = normalizePriority(taskPriority.value);
 
     if (!tasksData[selectedDate]) tasksData[selectedDate] = [];
     const newTask = { id: genId(), text, time, priority, reminder, favorite: false, completed: false };
@@ -124,8 +129,9 @@ function showTasks() {
     if (!selectedDate) return;
     const tasks = tasksData[selectedDate] || [];
 
-    // Sorteren: tijd oplopend, dan prioriteit (Hoog > Normaal > Laag)
-    const priorityRank = { high: 0, normal: 1, low: 2 };
+    // Sorteren: tijd oplopend, dan prioriteit (heel > belangrijk > minder)
+    // Backwards compatible met oude waarden (high/normal/low)
+    const priorityRank = { heel: 0, belangrijk: 1, minder: 2, high: 0, normal: 1, low: 2 };
     const toMinutes = (t) => {
         if (!t) return Number.POSITIVE_INFINITY; // zonder tijd achteraan
         const [hh, mm] = t.split(':').map(n => parseInt(n, 10));
@@ -135,8 +141,8 @@ function showTasks() {
     const sorted = [...tasks].sort((a, b) => {
         const diff = toMinutes(a.time) - toMinutes(b.time);
         if (diff !== 0) return diff;
-        const pa = priorityRank[a.priority] ?? 1;
-        const pb = priorityRank[b.priority] ?? 1;
+        const pa = priorityRank[normalizePriority(a.priority)] ?? 1;
+        const pb = priorityRank[normalizePriority(b.priority)] ?? 1;
         return pa - pb; // high(0) eerst
     });
 
@@ -175,8 +181,9 @@ function showTasks() {
         left.appendChild(textSpan);
 
         li.appendChild(left);
-        // Prioriteit-stijl
-        if (task.priority) li.classList.add(task.priority);
+        // Prioriteit-stijl (genormaliseerd)
+        const pNorm = normalizePriority(task.priority);
+        if (pNorm) li.classList.add(pNorm);
         if (task.completed) li.classList.add('completed');
 
         li.addEventListener('click', () => {
@@ -184,9 +191,6 @@ function showTasks() {
             li.classList.toggle('completed');
             saveTasks();
             updateProgress();
-            if (hideCompletedCheckbox?.checked) {
-                li.style.display = task.completed ? 'none' : '';
-            }
             cancelReminder(task.id);
         });
 
@@ -273,6 +277,22 @@ updateThemeToggleLabel();
 // Helpers
 function genId() {
     return 't_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function normalizePriority(val) {
+    if (!val) return 'belangrijk';
+    switch (val) {
+        case 'heel':
+        case 'high':
+            return 'heel';
+        case 'minder':
+        case 'low':
+            return 'minder';
+        case 'belangrijk':
+        case 'normal':
+        default:
+            return 'belangrijk';
+    }
 }
 
 function buildDueBadge(dateKey, timeStr) {

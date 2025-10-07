@@ -161,13 +161,13 @@ li.completed {
     transform: scale(1.05);
 }
 
-li.high {
-    border-left: 5px solid var(--danger);
-}
-
-li.low {
-    border-left: 5px solid var(--info);
-}
+/* Nieuwe prioriteiten */
+li.heel { border-left: 5px solid var(--danger); }
+li.belangrijk { border-left: 5px solid var(--primary); }
+li.minder { border-left: 5px solid var(--info); }
+/* Backwards compatibility voor bestaande data */
+li.high { border-left: 5px solid var(--danger); }
+li.low { border-left: 5px solid var(--info); }
 
 button.delete-btn {
     background: none;

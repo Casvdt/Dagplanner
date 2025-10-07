@@ -20,8 +20,8 @@
                 <div class="progress-text" aria-live="polite">0%</div>
             </div>
             <form class="task-form">
-                <input type="text" class="task-input" placeholder="Nieuwe taak...">
-                <input type="time" class="task-time">
+                <input type="text" class="task-input" placeholder="Nieuwe taak..." required>
+                <input type="time" class="task-time" required>
                 <select class="task-reminder" title="Herinnering">
                     <option value="none">Geen herinnering</option>
                     <option value="0">Op tijdstip</option>
@@ -31,9 +31,9 @@
                     <option value="60">1 uur eerder</option>
                 </select>
                 <select class="task-priority">
-                    <option value="normal">Normaal</option>
-                    <option value="high">Hoog 🔥</option>
-                    <option value="low">Laag 💤</option>
+                    <option value="belangrijk" selected>Belangrijk</option>
+                    <option value="heel">Heel belangrijk 🔥</option>
+                    <option value="minder">Minder belangrijk 💤</option>
                 </select>
                 <button type="submit">Toevoegen</button>
             </form>
