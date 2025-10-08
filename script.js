@@ -338,6 +338,41 @@ function goToNextMonth() {
 if (monthPrevBtn) monthPrevBtn.addEventListener('click', goToPrevMonth);
 if (monthNextBtn) monthNextBtn.addEventListener('click', goToNextMonth);
 
+function goToTodayMonth() {
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+    generateCalendar();
+}
+
+function isTypingInInput(e) {
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || e.isComposing;
+}
+
+// Keyboard navigation: ArrowLeft/Right and PageUp/PageDown, Home for today
+document.addEventListener('keydown', (e) => {
+    if (isTypingInInput(e)) return;
+    switch (e.key) {
+        case 'ArrowLeft':
+        case 'PageUp':
+            e.preventDefault();
+            goToPrevMonth();
+            break;
+        case 'ArrowRight':
+        case 'PageDown':
+            e.preventDefault();
+            goToNextMonth();
+            break;
+        case 'Home':
+            e.preventDefault();
+            goToTodayMonth();
+            break;
+        default:
+            break;
+    }
+});
+
 // (Feature verwijderd) Verberg voltooide taken
 
 // Init
