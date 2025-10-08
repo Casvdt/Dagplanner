@@ -77,6 +77,21 @@ body.dark .container { background: var(--surface); }
     margin-bottom: 20px;
 }
 
+/* Weekday header aligned with calendar grid */
+.weekday-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin: 8px 0 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    user-select: none;
+}
+.weekday-header > div {
+    text-align: center;
+    padding: 4px 0;
+}
+
 /* Calendar header with month and arrows */
 .calendar-header {
     display: flex;
