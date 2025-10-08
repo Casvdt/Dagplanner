@@ -39,47 +39,9 @@ function updateReminderState() {
         taskReminder.value = 'none';
     }
 
-// Periodically refresh relative-time badges (top-level)
-let dueBadgeIntervalId = null;
-let dueBadgeIntervalMs = 15000;
-function updateAllDueBadges() {
-    if (!taskList) return;
-    const badges = taskList.querySelectorAll('.badge');
-    let closestSec = Infinity;
-    badges.forEach(b => {
-        const dateKey = b.dataset.dateKey;
-        const timeStr = b.dataset.time;
-        if (!dateKey || !timeStr) return;
-        const now = new Date();
-        const when = parseDateTime(dateKey, timeStr);
-        const diffMs = when - now;
-        const { text, overdue, dueSoon, needsSecondTick } = formatRelativeDue(diffMs);
-        b.textContent = text;
-        b.classList.toggle('overdue', overdue);
-        b.classList.toggle('due-soon', !overdue && dueSoon);
-        const absSec = Math.floor(Math.abs(diffMs) / 1000);
-        if (absSec < closestSec) closestSec = absSec;
-    });
-    // After updating, decide if we should adjust cadence
-    adjustBadgeTimerCadence(closestSec);
 }
 
-function ensureDueBadgeTimer() {
-    if (dueBadgeIntervalId != null) return;
-    dueBadgeIntervalMs = 15000;
-    dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
-}
-
-function adjustBadgeTimerCadence(closestSec) {
-    if (!isFinite(closestSec)) return; // no badges
-    const targetMs = closestSec < 120 ? 1000 : 15000; // 1s when close, else 15s
-    if (targetMs !== dueBadgeIntervalMs) {
-        // Reset interval to new cadence
-        clearInterval(dueBadgeIntervalId);
-        dueBadgeIntervalMs = targetMs;
-        dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
-    }
-}
+// (moved live-badge updater to bottom of file)
 
 // Bulk selection helpers
 function setSelectionMode(on) {
@@ -650,6 +612,46 @@ function parseDateTime(dateKey, timeStr) {
     const [y, m, d] = dateKey.split('-').map(n => parseInt(n, 10));
     const [hh, mm] = timeStr.split(':').map(n => parseInt(n, 10));
     return new Date(y, m - 1, d, hh || 0, mm || 0, 0, 0);
+}
+
+// Live updater for relative-time badges (scoped to task list)
+let dueBadgeIntervalId = null;
+let dueBadgeIntervalMs = 15000;
+function updateAllDueBadges() {
+    if (!taskList) return;
+    const badges = taskList.querySelectorAll('.badge');
+    let closestSec = Infinity;
+    badges.forEach(b => {
+        const dateKey = b.dataset.dateKey;
+        const timeStr = b.dataset.time;
+        if (!dateKey || !timeStr) return;
+        const now = new Date();
+        const when = parseDateTime(dateKey, timeStr);
+        const diffMs = when - now;
+        const { text, overdue, dueSoon } = formatRelativeDue(diffMs);
+        b.textContent = text;
+        b.classList.toggle('overdue', overdue);
+        b.classList.toggle('due-soon', !overdue && dueSoon);
+        const absSec = Math.floor(Math.abs(diffMs) / 1000);
+        if (absSec < closestSec) closestSec = absSec;
+    });
+    adjustBadgeTimerCadence(closestSec);
+}
+
+function ensureDueBadgeTimer() {
+    if (dueBadgeIntervalId != null) return;
+    dueBadgeIntervalMs = 15000;
+    dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
+}
+
+function adjustBadgeTimerCadence(closestSec) {
+    if (!isFinite(closestSec)) return; // no badges
+    const targetMs = closestSec < 120 ? 1000 : 15000; // 1s when close, else 15s
+    if (targetMs !== dueBadgeIntervalMs) {
+        clearInterval(dueBadgeIntervalId);
+        dueBadgeIntervalMs = targetMs;
+        dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
+    }
 }
 
 // Drag & drop
