@@ -5,44 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Dagplanner</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/calendar.png" type="image/png">
 </head>
 <body>
     <div class="container">
+
         <h1>Mijn Super Dagplanner</h1>
         <button id="theme-toggle">🌙 Dark/Light Mode</button>
 
+        <div class="calendar-header">
+            <button class="month-prev" aria-label="Vorige maand">‹</button>
+            <h2 class="month-title"></h2>
+            <button class="month-next" aria-label="Volgende maand">›</button>
+        </div>
         <div class="calendar"></div>
 
         <div class="tasks-container">
-            <h2 class="selected-day">Selecteer een dag</h2>
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
-                <div class="progress-text" aria-live="polite">0%</div>
-            </div>
-            <form class="task-form">
-                <input type="text" class="task-input" placeholder="Nieuwe taak..." required>
-                <input type="time" class="task-time" required>
-                <select class="task-reminder" title="Herinnering">
-                    <option value="none">Geen herinnering</option>
-                    <option value="0">Op tijdstip</option>
-                    <option value="5">5 min eerder</option>
-                    <option value="10">10 min eerder</option>
-                    <option value="30">30 min eerder</option>
-                    <option value="60">1 uur eerder</option>
-                </select>
-                <select class="task-priority">
-                    <option value="belangrijk" selected>Belangrijk</option>
-                    <option value="heel">Heel belangrijk 🔥</option>
-                    <option value="minder">Minder belangrijk 💤</option>
-                </select>
-                <button type="submit">Toevoegen</button>
-            </form>
-            <ul class="task-list"></ul>
+        <h2 class="selected-day">Selecteer een dag</h2>
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+            <div class="progress-text" aria-live="polite">0%</div>
         </div>
+        <form class="task-form">
+            <input type="text" class="task-input" placeholder="Nieuwe taak..." required>
+            <input type="time" class="task-time">
+            <select class="task-reminder" title="Herinnering">
+                <option value="none">Geen herinnering</option>
+                <option value="0">Op tijdstip</option>
+                <option value="5">5 min eerder</option>
+                <option value="10">10 min eerder</option>
+                <option value="30">30 min eerder</option>
+                <option value="60">1 uur eerder</option>
+            </select>
+            <select class="task-priority">
+                <option value="belangrijk" selected>Belangrijk</option>
+                <option value="heel">Heel belangrijk 🔥</option>
+                <option value="minder">Minder belangrijk 💤</option>
+            </select>
+            <button type="submit">Toevoegen</button>
+        </form>
+        <ul class="task-list"></ul>
     </div>
+    </div>
+
+    <footer class="site-footer">
+        <p>© All rights reserved. Cas van der Toorn.</p>
+        <p><a href="https://www.flaticon.com/free-icons/calendar" title="calendar icons">Calendar icons created by pojok d - Flaticon</a></p>
+    </footer>
 
     <!-- Confetti library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
-</body>
-</html>
+    </body>
+    </html>

@@ -77,6 +77,37 @@ body.dark .container { background: var(--surface); }
     margin-bottom: 20px;
 }
 
+/* Calendar header with month and arrows */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 6px 0 10px;
+}
+.calendar-header .month-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+.calendar-header .month-prev,
+.calendar-header .month-next {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+}
+.calendar-header .month-prev:hover,
+.calendar-header .month-next:hover {
+    background: var(--muted);
+}
+
 .day {
     padding: 10px;
     background-color: var(--card);
@@ -254,3 +285,20 @@ li.drop-target { outline: 2px dashed var(--primary); }
     100% { transform: scale(1); }
 }
 .bounce-in { animation: fadeIn 0.5s forwards, subtle-bounce 0.25s ease-out; }
+
+/* Footer */
+.site-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+}
+.site-footer a { color: var(--text-muted); text-decoration: underline; }
+
+/* Disabled reminder appearance */
+.task-reminder:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -9,14 +9,34 @@ const selectedDayTitle = document.querySelector('.selected-day');
 const progressBar = document.querySelector('.progress-bar');
 const progressText = document.querySelector('.progress-text');
 const themeToggle = document.getElementById('theme-toggle');
+const monthTitleEl = document.querySelector('.month-title');
+const monthPrevBtn = document.querySelector('.month-prev');
+const monthNextBtn = document.querySelector('.month-next');
 
 let selectedDate = null;
+let viewYear, viewMonth; // month: 0-11
 
 // Taken opslaan in localStorage
 let tasksData = JSON.parse(localStorage.getItem('tasksData')) || {};
 // Tijdelijke timers voor herinneringen (niet persistent)
 const reminderTimers = new Map(); // key: taskId -> timeoutId
 let dragOverBound = false;
+
+// Herinnering uitschakelen wanneer geen tijd is ingevuld
+function updateReminderState() {
+    if (!taskReminder) return;
+    const hasTime = Boolean(taskTime && taskTime.value);
+    taskReminder.disabled = !hasTime;
+    if (!hasTime) {
+        taskReminder.value = 'none';
+    }
+}
+
+if (taskTime) {
+    taskTime.addEventListener('input', updateReminderState);
+}
+// Initialize state on load
+updateReminderState();
 
 // Thema beheer
 function applyTheme(theme) {
@@ -47,11 +67,6 @@ taskForm.addEventListener('submit', e => {
     }
 
     const time = taskTime.value;
-    if (!time) {
-        taskTime.classList.add('shake');
-        taskTime.addEventListener('animationend', () => taskTime.classList.remove('shake'), { once: true });
-        return;
-    }
     const reminder = taskReminder?.value || 'none';
     const priority = normalizePriority(taskPriority.value);
 
@@ -83,22 +98,34 @@ function updateThemeToggleLabel() {
     themeToggle.textContent = isDark ? '☀️ Licht thema' : '🌙 Donker thema';
 }
 
-// Kalender genereren
+// Maandnamen NL
+const MONTH_NAMES_NL = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+
+// Kalender genereren voor viewYear/viewMonth
 function generateCalendar() {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    if (typeof viewYear !== 'number' || typeof viewMonth !== 'number') {
+        const now = new Date();
+        viewYear = now.getFullYear();
+        viewMonth = now.getMonth();
+    }
+
+    const year = viewYear;
+    const month = viewMonth; // 0-11
+    if (monthTitleEl) monthTitleEl.textContent = `${MONTH_NAMES_NL[month]} ${year}`;
 
     calendar.innerHTML = '';
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let i = 0; i < firstDay; i++) {
         calendar.appendChild(document.createElement('div'));
     }
-    let todayEl = null;
+
     const today = new Date();
     const isThisMonth = today.getFullYear() === year && today.getMonth() === month;
+    let todayEl = null;
+
     for (let day = 1; day <= daysInMonth; day++) {
         const dayEl = document.createElement('div');
         dayEl.classList.add('day');
@@ -118,8 +145,16 @@ function generateCalendar() {
         if (isThisMonth && today.getDate() === day) {
             todayEl = dayEl;
         }
+        // If a previously selectedDate is in this view, re-select it
+        if (selectedDate) {
+            const [sy, sm, sd] = selectedDate.split('-').map(n => parseInt(n, 10));
+            if (sy === year && (sm - 1) === month && sd === day) {
+                todayEl = dayEl; // reuse selection mechanism
+            }
+        }
     }
-    // Auto-selecteer vandaag
+
+    // Auto-select: prefer selectedDate in this month, else today if current month
     if (todayEl) {
         todayEl.click();
     }
@@ -275,6 +310,32 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', theme);
     updateThemeToggleLabel();
 });
+
+// Maand navigatie
+function goToPrevMonth() {
+    if (typeof viewYear !== 'number' || typeof viewMonth !== 'number') {
+        const now = new Date();
+        viewYear = now.getFullYear();
+        viewMonth = now.getMonth();
+    }
+    viewMonth -= 1;
+    if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
+    generateCalendar();
+}
+
+function goToNextMonth() {
+    if (typeof viewYear !== 'number' || typeof viewMonth !== 'number') {
+        const now = new Date();
+        viewYear = now.getFullYear();
+        viewMonth = now.getMonth();
+    }
+    viewMonth += 1;
+    if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
+    generateCalendar();
+}
+
+if (monthPrevBtn) monthPrevBtn.addEventListener('click', goToPrevMonth);
+if (monthNextBtn) monthNextBtn.addEventListener('click', goToNextMonth);
 
 // (Feature verwijderd) Verberg voltooide taken
 
