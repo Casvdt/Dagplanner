@@ -212,6 +212,40 @@ li {
     animation: fadeIn 0.5s forwards;
 }
 
+/* Bulk selection UI */
+.bulk-actions {
+    display: none; /* toggled by JS */
+    margin-top: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.bulk-actions-buttons { display: flex; gap: 8px; }
+.bulk-actions .bulk-delete {
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.bulk-actions .bulk-cancel {
+    background: var(--muted);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.task-select { margin-right: 8px; }
+li.is-selected { outline: 2px solid var(--primary); outline-offset: 2px; }
+
 li.completed {
     text-decoration: line-through;
     background-color: var(--success-bg);

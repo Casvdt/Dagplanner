@@ -12,6 +12,8 @@
 
         <h1>Mijn Super Dagplanner</h1>
         <button id="theme-toggle">🌙 Dark/Light Mode</button>
+        <button id="select-toggle" title="Selecteer meerdere taken">☑️ Selecteer taken</button>
+        <button id="copy-subscription" title="Kopieer push subscription" style="float:right">🔗 Copy subscription</button>
 
         <div class="calendar-header">
             <button class="month-prev" aria-label="Vorige maand">‹</button>
@@ -54,6 +56,13 @@
             <button type="submit">Toevoegen</button>
         </form>
         <ul class="task-list"></ul>
+        <div class="bulk-actions" aria-live="polite" aria-hidden="true">
+            <span class="bulk-count">0 geselecteerd</span>
+            <div class="bulk-actions-buttons">
+                <button type="button" class="bulk-delete">🗑️ Verwijder geselecteerde</button>
+                <button type="button" class="bulk-cancel">Annuleren</button>
+            </div>
+        </div>
     </div>
     <footer class="site-footer">    
         <p>© 2025 Cas van der Toorn. All rights reserved.</p>

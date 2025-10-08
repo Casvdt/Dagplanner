@@ -12,6 +12,12 @@ const themeToggle = document.getElementById('theme-toggle');
 const monthTitleEl = document.querySelector('.month-title');
 const monthPrevBtn = document.querySelector('.month-prev');
 const monthNextBtn = document.querySelector('.month-next');
+const selectToggle = document.getElementById('select-toggle');
+const bulkBar = document.querySelector('.bulk-actions');
+const bulkCount = document.querySelector('.bulk-count');
+const bulkDeleteBtn = document.querySelector('.bulk-delete');
+const bulkCancelBtn = document.querySelector('.bulk-cancel');
+const copySubBtn = document.getElementById('copy-subscription');
 
 let selectedDate = null;
 let viewYear, viewMonth; // month: 0-11
@@ -21,6 +27,8 @@ let tasksData = JSON.parse(localStorage.getItem('tasksData')) || {};
 // Tijdelijke timers voor herinneringen (niet persistent)
 const reminderTimers = new Map(); // key: taskId -> timeoutId
 let dragOverBound = false;
+let selectionMode = false;
+const selectedIds = new Set();
 
 // Herinnering uitschakelen wanneer geen tijd is ingevuld
 function updateReminderState() {
@@ -32,11 +40,135 @@ function updateReminderState() {
     }
 }
 
+// Bulk selection helpers
+function setSelectionMode(on) {
+    selectionMode = Boolean(on);
+    selectedIds.clear();
+    updateBulkUI();
+    // Re-render to add/remove checkboxes
+    showTasks();
+}
+
+function toggleSelect(taskId, isSelected) {
+    if (isSelected) selectedIds.add(taskId); else selectedIds.delete(taskId);
+    updateBulkUI();
+}
+
+function updateBulkUI() {
+    if (!bulkBar || !bulkCount || !selectToggle) return;
+    const count = selectedIds.size;
+    bulkBar.style.display = selectionMode ? 'flex' : 'none';
+    bulkBar.setAttribute('aria-hidden', selectionMode ? 'false' : 'true');
+    bulkCount.textContent = `${count} geselecteerd`;
+    selectToggle.textContent = selectionMode ? '✔️ Klaar met selecteren' : '☑️ Selecteer taken';
+}
+
+if (selectToggle) {
+    selectToggle.addEventListener('click', () => setSelectionMode(!selectionMode));
+}
+if (bulkCancelBtn) {
+    bulkCancelBtn.addEventListener('click', () => setSelectionMode(false));
+}
+if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', () => {
+        if (!selectedDate || selectedIds.size === 0) return;
+        const tasks = tasksData[selectedDate] || [];
+        const toDelete = new Set(selectedIds);
+        const remaining = [];
+        tasks.forEach(t => {
+            if (toDelete.has(t.id)) {
+                cancelReminder(t.id);
+            } else {
+                remaining.push(t);
+            }
+        });
+        tasksData[selectedDate] = remaining;
+        saveTasks();
+        setSelectionMode(false);
+        showTasks();
+        updateProgress();
+    });
+}
+
+// Copy Push subscription JSON to clipboard for sender.js
+if (copySubBtn) {
+    copySubBtn.addEventListener('click', async () => {
+        const sub = localStorage.getItem('pushSubscription');
+        if (!sub) {
+            alert('Geen subscription gevonden. Laad de pagina opnieuw zodat de service worker zich kan abonneren.');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(sub);
+            alert('Push subscription gekopieerd naar klembord! Plak het in sender.js.');
+        } catch (e) {
+            console.warn('Clipboard API faalde, log naar console');
+            console.log('Push subscription:', sub);
+            alert('Kon niet kopiëren. De subscription staat in de console.');
+        }
+    });
+}
+
 if (taskTime) {
     taskTime.addEventListener('input', updateReminderState);
 }
-// Initialize state on load
 updateReminderState();
+
+// Notification API helpers
+function showNotification(title, options) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+        new Notification(title, options);
+    }
+}
+
+// Request permission on load and log the result (once)
+if ('Notification' in window) {
+    Notification.requestPermission().then(permission => {
+        console.log('Notification permission:', permission);
+    });
+}
+
+// Service Worker + Push subscription (requires HTTPS or localhost)
+async function registerServiceWorkerAndSubscribe() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.warn('ServiceWorker/Push not supported');
+        return;
+    }
+    try {
+        const reg = await navigator.serviceWorker.register('sw.js');
+        console.log('Service Worker registered:', reg.scope);
+
+        // If already subscribed, reuse it
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+            const publicKey = (window.VAPID_PUBLIC_KEY || '').trim();
+            if (!publicKey) {
+                console.warn('No VAPID public key set. Set window.VAPID_PUBLIC_KEY to subscribe.');
+                return;
+            }
+            sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+        }
+        console.log('Push subscription:', JSON.stringify(sub));
+        localStorage.setItem('pushSubscription', JSON.stringify(sub));
+    } catch (err) {
+        console.error('SW/Push setup failed:', err);
+    }
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
 
 // Thema beheer
 function applyTheme(theme) {
@@ -166,6 +298,8 @@ function selectDay(dayEl) {
     document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
     dayEl.classList.add('selected');
     selectedDayTitle.textContent = `Taken voor ${formatDateNL(selectedDate)}`;
+    // Exit selection mode when changing day
+    setSelectionMode(false);
 }
 
 // Taken tonen
@@ -202,6 +336,19 @@ function showTasks() {
         left.style.display = 'flex';
         left.style.alignItems = 'center';
 
+        // Bulk select checkbox (only in selection mode)
+        if (selectionMode) {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-select';
+            checkbox.checked = selectedIds.has(task.id);
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSelect(task.id, checkbox.checked);
+            });
+            left.appendChild(checkbox);
+        }
+
         // Favorite toggle
         const favBtn = document.createElement('button');
         favBtn.className = 'fav-btn' + (task.favorite ? ' active' : '');
@@ -232,6 +379,14 @@ function showTasks() {
         if (task.completed) li.classList.add('completed');
 
         li.addEventListener('click', () => {
+            if (selectionMode) {
+                const currentlySelected = selectedIds.has(task.id);
+                toggleSelect(task.id, !currentlySelected);
+                // keep visual checkbox in sync if present
+                const cb = li.querySelector('input.task-select');
+                if (cb) cb.checked = !currentlySelected;
+                return;
+            }
             task.completed = !task.completed;
             li.classList.toggle('completed');
             saveTasks();
@@ -269,6 +424,7 @@ function showTasks() {
     scheduleRemindersForDay(selectedDate);
     // Bind dragover eenmaal
     attachDragOverOnce();
+    updateBulkUI();
 }
 
 // Taken opslaan
@@ -379,6 +535,8 @@ document.addEventListener('keydown', (e) => {
 applyTheme(getInitialTheme());
 generateCalendar();
 updateThemeToggleLabel();
+// Register SW + subscribe to Push (requires window.VAPID_PUBLIC_KEY)
+registerServiceWorkerAndSubscribe();
 
 // Helpers
 function genId() {
@@ -506,8 +664,11 @@ function scheduleReminderForTask(dateKey, task) {
     const delay = notifyAt.getTime() - Date.now();
     if (delay <= 0) return;
     requestNotificationPermission();
+    // Local fallback notification (only works if tab is open)
     const timeoutId = setTimeout(() => notifyTask(task, dateKey), delay);
     reminderTimers.set(task.id, timeoutId);
+
+    // No server-side push scheduling; rely on local in-page notifications only
 }
 
 function cancelReminder(taskId) {
@@ -523,11 +684,11 @@ function requestNotificationPermission() {
     }
 }
 function notifyTask(task, dateKey) {
-    const title = 'Herinnering';
+    const title = 'Herinnering!';
     const dateStr = formatDateNL(dateKey);
     const body = `${dateStr} ${task.time ? task.time + ' - ' : ''}${task.text}`;
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body });
+        showNotification(title, { body, icon: 'images/calendar.png' });
     } else {
         alert(`${title}: ${body}`);
     }
