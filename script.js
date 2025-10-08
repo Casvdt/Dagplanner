@@ -80,7 +80,6 @@ function adjustBadgeTimerCadence(closestSec) {
         dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
     }
 }
-}
 
 // Bulk selection helpers
 function setSelectionMode(on) {
