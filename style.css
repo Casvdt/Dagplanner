@@ -131,6 +131,10 @@ body.dark .container { background: var(--surface); }
     cursor: pointer;
     border: 1px solid var(--border);
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0; /* prevent overflow on narrow screens */
 }
 
 .day:hover { background-color: var(--muted); }
@@ -178,7 +182,14 @@ body.dark .container { background: var(--surface); }
 .task-form button[type="submit"] { flex: 0 0 auto; }
 
 @media (max-width: 520px) {
-  .calendar { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  body { padding: 16px; }
+  .container { padding: 16px; }
+  .calendar { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+  .weekday-header { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; font-size: 10px; }
+  .weekday-header > div { padding: 2px 0; }
+  .day { padding: 0; font-size: 11px; aspect-ratio: 1 / 1; }
+  .calendar-header .month-title { font-size: 16px; }
+  .calendar-header .month-prev, .calendar-header .month-next { width: 28px; height: 28px; font-size: 16px; line-height: 26px; }
   .task-form { gap: 8px; }
 }
 
