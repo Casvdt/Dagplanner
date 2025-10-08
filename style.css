@@ -136,6 +136,20 @@ body.dark .container { background: var(--surface); }
 .calendar-header .month-next:hover {
     background: var(--muted);
 }
+.calendar-header .month-prev:focus-visible,
+.calendar-header .month-next:focus-visible,
+#theme-toggle:focus-visible,
+#select-toggle:focus-visible,
+.task-form button:focus-visible,
+li:focus-visible,
+.fav-btn:focus-visible,
+button.delete-btn:focus-visible,
+.bulk-actions .bulk-delete:focus-visible,
+.bulk-actions .bulk-cancel:focus-visible,
+.day:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
 
 .day {
     padding: 10px;
