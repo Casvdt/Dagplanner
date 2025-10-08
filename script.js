@@ -41,9 +41,11 @@ function updateReminderState() {
 
 // Periodically refresh relative-time badges (top-level)
 let dueBadgeIntervalId = null;
+let dueBadgeIntervalMs = 15000;
 function updateAllDueBadges() {
     if (!taskList) return;
     const badges = taskList.querySelectorAll('.badge');
+    let closestSec = Infinity;
     badges.forEach(b => {
         const dateKey = b.dataset.dateKey;
         const timeStr = b.dataset.time;
@@ -51,17 +53,32 @@ function updateAllDueBadges() {
         const now = new Date();
         const when = parseDateTime(dateKey, timeStr);
         const diffMs = when - now;
-        const { text, overdue, dueSoon } = formatRelativeDue(diffMs);
+        const { text, overdue, dueSoon, needsSecondTick } = formatRelativeDue(diffMs);
         b.textContent = text;
         b.classList.toggle('overdue', overdue);
         b.classList.toggle('due-soon', !overdue && dueSoon);
+        const absSec = Math.floor(Math.abs(diffMs) / 1000);
+        if (absSec < closestSec) closestSec = absSec;
     });
+    // After updating, decide if we should adjust cadence
+    adjustBadgeTimerCadence(closestSec);
 }
 
 function ensureDueBadgeTimer() {
     if (dueBadgeIntervalId != null) return;
-    // Update every 15s for smoother countdown without noticeable impact
-    dueBadgeIntervalId = setInterval(updateAllDueBadges, 15000);
+    dueBadgeIntervalMs = 15000;
+    dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
+}
+
+function adjustBadgeTimerCadence(closestSec) {
+    if (!isFinite(closestSec)) return; // no badges
+    const targetMs = closestSec < 120 ? 1000 : 15000; // 1s when close, else 15s
+    if (targetMs !== dueBadgeIntervalMs) {
+        // Reset interval to new cadence
+        clearInterval(dueBadgeIntervalId);
+        dueBadgeIntervalMs = targetMs;
+        dueBadgeIntervalId = setInterval(updateAllDueBadges, dueBadgeIntervalMs);
+    }
 }
 }
 
@@ -600,27 +617,33 @@ function buildDueBadge(dateKey, timeStr) {
 function formatRelativeDue(diffMs) {
     const overdue = diffMs < 0;
     const absMs = Math.abs(diffMs);
-    const totalMinutes = Math.floor(absMs / 60000);
+    const totalSeconds = Math.floor(absMs / 1000);
+    const totalMinutes = Math.floor(totalSeconds / 60);
     const minutesInMonth = 30 * 24 * 60; // approx
     const minutesInDay = 24 * 60;
     const minutesInHour = 60;
 
-    let rem = totalMinutes;
-    const months = Math.floor(rem / minutesInMonth); rem -= months * minutesInMonth;
-    const days = Math.floor(rem / minutesInDay); rem -= days * minutesInDay;
-    const hours = Math.floor(rem / minutesInHour); rem -= hours * minutesInHour;
-    const minutes = rem;
+    let remMin = totalMinutes;
+    const months = Math.floor(remMin / minutesInMonth); remMin -= months * minutesInMonth;
+    const days = Math.floor(remMin / minutesInDay); remMin -= days * minutesInDay;
+    const hours = Math.floor(remMin / minutesInHour); remMin -= hours * minutesInHour;
+    const minutes = remMin;
+    const seconds = totalSeconds % 60;
 
     const parts = [];
-    if (months) parts.push(`${months} mnd`);
-    if (days) parts.push(`${days} d`);
-    if (hours) parts.push(`${hours} u`);
-    if (minutes || parts.length === 0) parts.push(`${minutes} min`);
-    // Limit to max 3 parts for readability
-    const textCore = parts.slice(0, 3).join(' ');
+    if (months) parts.push(`${months} ${months === 1 ? 'maand' : 'maanden'}`);
+    if (days) parts.push(`${days} ${days === 1 ? 'dag' : 'dagen'}`);
+    if (hours) parts.push(`${hours} ${hours === 1 ? 'uur' : 'uur'}`); // 'uur' is both singular/plural
+    if (minutes || parts.length === 0) parts.push(`${minutes} ${minutes === 1 ? 'minuut' : 'minuten'}`);
+    // If under 90s total, prefer seconds-only to look like a countdown
+    let showSecondsOnly = totalSeconds < 90;
+    const textCore = showSecondsOnly
+        ? `${totalSeconds} ${totalSeconds === 1 ? 'seconde' : 'seconden'}`
+        : parts.slice(0, 3).join(' ');
     const text = overdue ? `Te laat ${textCore}` : `Over ${textCore}`;
     const dueSoon = !overdue && absMs <= 60 * 60 * 1000; // within 1h
-    return { text, overdue, dueSoon };
+    const needsSecondTick = totalSeconds < 120; // switch to 1s cadence under 2 minutes
+    return { text, overdue, dueSoon, needsSecondTick };
 }
 
 function parseDateTime(dateKey, timeStr) {
