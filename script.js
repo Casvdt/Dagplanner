@@ -115,7 +115,8 @@ function generateCalendar() {
 
     calendar.innerHTML = '';
 
-    const firstDay = new Date(year, month, 1).getDay();
+    const firstDayRaw = new Date(year, month, 1).getDay(); // 0=zo .. 6=za
+    const firstDay = (firstDayRaw + 6) % 7; // maak maandag=0
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let i = 0; i < firstDay; i++) {
