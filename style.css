@@ -70,6 +70,20 @@ body.dark .container { background: var(--surface); }
 #theme-toggle:hover { background: var(--muted); }
 #theme-toggle:active { transform: translateY(1px); }
 
+/* Make the select-toggle look like the submit button */
+#select-toggle {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border: none;
+    background-color: var(--primary);
+    color: var(--on-primary);
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.05s ease;
+}
+#select-toggle:hover { filter: brightness(0.95); }
+#select-toggle:active { transform: translateY(1px); }
+
 .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -210,7 +224,11 @@ li {
     transition: transform 0.3s, background 0.3s;
     opacity: 0;
     animation: fadeIn 0.5s forwards;
+    cursor: pointer;
 }
+
+/* Hover state for clickable list items */
+li:hover { background: var(--muted); }
 
 /* Bulk selection UI */
 .bulk-actions {
@@ -235,6 +253,7 @@ li {
     border-radius: 6px;
     cursor: pointer;
 }
+.bulk-actions .bulk-delete:hover { filter: brightness(0.95); }
 .bulk-actions .bulk-cancel {
     background: var(--muted);
     color: var(--text);
@@ -243,6 +262,7 @@ li {
     border-radius: 6px;
     cursor: pointer;
 }
+.bulk-actions .bulk-cancel:hover { background: var(--card); }
 .task-select { margin-right: 8px; }
 li.is-selected { outline: 2px solid var(--primary); outline-offset: 2px; }
 
@@ -266,6 +286,7 @@ button.delete-btn {
     cursor: pointer;
     font-size: 18px;
 }
+button.delete-btn:hover { color: var(--danger); }
 
 @keyframes fadeIn {
     to { opacity: 1; }
@@ -323,6 +344,7 @@ button.delete-btn {
     font-size: 18px;
     margin-right: 6px;
 }
+.fav-btn:hover { transform: scale(1.1); }
 .fav-btn.active { color: #f59e0b; }
 
 /* Drag & drop visuals */

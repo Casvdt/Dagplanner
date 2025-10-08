@@ -17,7 +17,7 @@ const bulkBar = document.querySelector('.bulk-actions');
 const bulkCount = document.querySelector('.bulk-count');
 const bulkDeleteBtn = document.querySelector('.bulk-delete');
 const bulkCancelBtn = document.querySelector('.bulk-cancel');
-const copySubBtn = document.getElementById('copy-subscription');
+// Removed: copy subscription button (no longer used)
 
 let selectedDate = null;
 let viewYear, viewMonth; // month: 0-11
@@ -72,6 +72,7 @@ if (bulkCancelBtn) {
 if (bulkDeleteBtn) {
     bulkDeleteBtn.addEventListener('click', () => {
         if (!selectedDate || selectedIds.size === 0) return;
+        const countToDelete = selectedIds.size;
         const tasks = tasksData[selectedDate] || [];
         const toDelete = new Set(selectedIds);
         const remaining = [];
@@ -87,27 +88,17 @@ if (bulkDeleteBtn) {
         setSelectionMode(false);
         showTasks();
         updateProgress();
+        // Bigger confetti burst for bulk delete
+        try {
+            const particles = Math.min(120 + countToDelete * 60, 600);
+            confetti({ particleCount: particles, spread: 100, origin: { y: 0.6 } });
+            // Second wider burst for effect
+            confetti({ particleCount: Math.min(Math.floor(particles / 2), 300), spread: 140, scalar: 1.2, origin: { y: 0.4 } });
+        } catch (e) { /* confetti lib not available */ }
     });
 }
 
-// Copy Push subscription JSON to clipboard for sender.js
-if (copySubBtn) {
-    copySubBtn.addEventListener('click', async () => {
-        const sub = localStorage.getItem('pushSubscription');
-        if (!sub) {
-            alert('Geen subscription gevonden. Laad de pagina opnieuw zodat de service worker zich kan abonneren.');
-            return;
-        }
-        try {
-            await navigator.clipboard.writeText(sub);
-            alert('Push subscription gekopieerd naar klembord! Plak het in sender.js.');
-        } catch (e) {
-            console.warn('Clipboard API faalde, log naar console');
-            console.log('Push subscription:', sub);
-            alert('Kon niet kopiëren. De subscription staat in de console.');
-        }
-    });
-}
+// (Removed copy-subscription UI and handler)
 
 if (taskTime) {
     taskTime.addEventListener('input', updateReminderState);
