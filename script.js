@@ -761,3 +761,5 @@ function notifyTask(task, dateKey) {
     // Reset priority default to 'belangrijk' after submit
     task.priority = normalizePriority(task.priority);
 }
+
+
