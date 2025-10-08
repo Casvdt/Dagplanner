@@ -42,7 +42,8 @@ function updateReminderState() {
 // Periodically refresh relative-time badges (top-level)
 let dueBadgeIntervalId = null;
 function updateAllDueBadges() {
-    const badges = document.querySelectorAll('.badge');
+    if (!taskList) return;
+    const badges = taskList.querySelectorAll('.badge');
     badges.forEach(b => {
         const dateKey = b.dataset.dateKey;
         const timeStr = b.dataset.time;
@@ -59,7 +60,8 @@ function updateAllDueBadges() {
 
 function ensureDueBadgeTimer() {
     if (dueBadgeIntervalId != null) return;
-    dueBadgeIntervalId = setInterval(updateAllDueBadges, 30000);
+    // Update every 15s for smoother countdown without noticeable impact
+    dueBadgeIntervalId = setInterval(updateAllDueBadges, 15000);
 }
 }
 
