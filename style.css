@@ -158,19 +158,35 @@ button.delete-btn:focus-visible,
     border-radius: 5px;
     cursor: pointer;
     border: 1px solid var(--border);
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 0; /* prevent overflow on narrow screens */
 }
 
-.day:hover { background-color: var(--muted); }
+/* Cleaner hover for normal days (not selected) */
+.day:not(.selected):hover {
+    background-color: var(--muted);
+    border-color: var(--primary-100);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+}
 
 .day.selected {
     background-color: var(--primary);
     color: var(--on-primary);
     border-color: transparent;
+}
+
+/* Keep color blocks for load states; just add subtle elevation on hover */
+.day.load-few:not(.selected):hover,
+.day.load-many:not(.selected):hover {
+    background-color: inherit;
+    filter: brightness(1.03);
+    border-color: transparent;
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
 }
 
 /* Dag-ladingstatus op basis van aantal taken */
