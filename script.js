@@ -38,6 +38,29 @@ function updateReminderState() {
     if (!hasTime) {
         taskReminder.value = 'none';
     }
+
+// Periodically refresh relative-time badges (top-level)
+let dueBadgeIntervalId = null;
+function updateAllDueBadges() {
+    const badges = document.querySelectorAll('.badge');
+    badges.forEach(b => {
+        const dateKey = b.dataset.dateKey;
+        const timeStr = b.dataset.time;
+        if (!dateKey || !timeStr) return;
+        const now = new Date();
+        const when = parseDateTime(dateKey, timeStr);
+        const diffMs = when - now;
+        const { text, overdue, dueSoon } = formatRelativeDue(diffMs);
+        b.textContent = text;
+        b.classList.toggle('overdue', overdue);
+        b.classList.toggle('due-soon', !overdue && dueSoon);
+    });
+}
+
+function ensureDueBadgeTimer() {
+    if (dueBadgeIntervalId != null) return;
+    dueBadgeIntervalId = setInterval(updateAllDueBadges, 30000);
+}
 }
 
 // Bulk selection helpers
@@ -416,6 +439,8 @@ function showTasks() {
     // Bind dragover eenmaal
     attachDragOverOnce();
     updateBulkUI();
+    // Refresh due-time badges immediately after render
+    updateAllDueBadges();
 }
 
 // Taken opslaan
@@ -528,6 +553,8 @@ generateCalendar();
 updateThemeToggleLabel();
 // Register SW + subscribe to Push (requires window.VAPID_PUBLIC_KEY)
 registerServiceWorkerAndSubscribe();
+// Start periodic badge updates
+ensureDueBadgeTimer();
 
 // Helpers
 function genId() {
@@ -557,17 +584,41 @@ function buildDueBadge(dateKey, timeStr) {
     const diffMs = taskDate - now;
     const span = document.createElement('span');
     span.className = 'badge';
-    if (diffMs < 0) {
-        span.classList.add('overdue');
-        span.textContent = 'Te laat';
-    } else if (diffMs <= 60 * 60 * 1000) {
-        span.classList.add('due-soon');
-        span.textContent = 'Binnen 1u';
-    } else {
-        // Geen badge nodig als niet snel
-        return null;
-    }
+    // Save data for live updates
+    span.dataset.dateKey = dateKey;
+    span.dataset.time = timeStr;
+
+    const { text, overdue, dueSoon } = formatRelativeDue(diffMs);
+    if (overdue) span.classList.add('overdue');
+    else if (dueSoon) span.classList.add('due-soon');
+    span.textContent = text;
     return span;
+}
+
+function formatRelativeDue(diffMs) {
+    const overdue = diffMs < 0;
+    const absMs = Math.abs(diffMs);
+    const totalMinutes = Math.floor(absMs / 60000);
+    const minutesInMonth = 30 * 24 * 60; // approx
+    const minutesInDay = 24 * 60;
+    const minutesInHour = 60;
+
+    let rem = totalMinutes;
+    const months = Math.floor(rem / minutesInMonth); rem -= months * minutesInMonth;
+    const days = Math.floor(rem / minutesInDay); rem -= days * minutesInDay;
+    const hours = Math.floor(rem / minutesInHour); rem -= hours * minutesInHour;
+    const minutes = rem;
+
+    const parts = [];
+    if (months) parts.push(`${months} mnd`);
+    if (days) parts.push(`${days} d`);
+    if (hours) parts.push(`${hours} u`);
+    if (minutes || parts.length === 0) parts.push(`${minutes} min`);
+    // Limit to max 3 parts for readability
+    const textCore = parts.slice(0, 3).join(' ');
+    const text = overdue ? `Te laat ${textCore}` : `Over ${textCore}`;
+    const dueSoon = !overdue && absMs <= 60 * 60 * 1000; // within 1h
+    return { text, overdue, dueSoon };
 }
 
 function parseDateTime(dateKey, timeStr) {
